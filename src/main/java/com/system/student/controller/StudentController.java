@@ -17,7 +17,6 @@ public class StudentController {
 
     @PostMapping("/create")
     public Student addStudent(@RequestBody Student student) {
-        // Saving the student to the database
         return studentRepository.save(student);
     }
 
