@@ -1,5 +1,6 @@
 package com.system.student.service;
 
+import com.system.student.exception.BadRequest;
 import com.system.student.model.Student;
 import com.system.student.repository.StudentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,28 +19,24 @@ public class StudentService {
         return studentRepository.save(student);
     }
 
-    public Optional<Student> getStudentById(int id) {
-        return studentRepository.findById(id);
+    public Student getStudentById(int id) {
+        return studentRepository.findById(id).orElseThrow(() -> new BadRequest("Student with id " + id + " not found"));
     }
 
-    public Optional<Student> updateStudent(int id, Student updatedStudent) {
-        Optional<Student> existingStudentOptional = studentRepository.findById(id);
+    public Student updateStudent(int id, Student updatedStudent) {
+        Student existingStudent = studentRepository.findById(id)
+                .orElseThrow(() -> new BadRequest("Cannot update. Student with id " + id + " not found"));
 
-        if (existingStudentOptional.isPresent()) {
-            Student existingStudent = existingStudentOptional.get();
-            existingStudent.setName(updatedStudent.getName());
-            return Optional.of(studentRepository.save(existingStudent));
-        }
-
-        return Optional.empty();
+        // Update student details
+        existingStudent.setName(updatedStudent.getName());
+        return studentRepository.save(existingStudent);
     }
 
-    public boolean deleteStudentById(int id) {
-        if (studentRepository.existsById(id)) {
-            studentRepository.deleteById(id);
-            return true;
-        }
-        return false;
+    public void deleteStudentById(int id) {
+        Student existingStudent = studentRepository.findById(id)
+                .orElseThrow(() -> new BadRequest("Cannot delete. Student with id " + id + " not found"));
+
+        studentRepository.delete(existingStudent);
     }
 
     public List<Student> getAllStudents() {

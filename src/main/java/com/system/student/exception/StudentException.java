@@ -1,7 +1,7 @@
 package com.system.student.exception;
 
 public class StudentException extends RuntimeException{
-    int statusCode = 501;
+    private int statusCode = 501;
 
     public StudentException(int statusCode) {
         this.statusCode = statusCode;
@@ -24,6 +24,14 @@ public class StudentException extends RuntimeException{
 
     public StudentException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace, int statusCode) {
         super(message, cause, enableSuppression, writableStackTrace);
+        this.statusCode = statusCode;
+    }
+
+    public int getStatusCode() {
+        return statusCode;
+    }
+
+    public void setStatusCode(int statusCode) {
         this.statusCode = statusCode;
     }
 }
