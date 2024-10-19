@@ -2,27 +2,27 @@ package com.system.student.controller;
 
 
 import com.system.student.model.Student;
+import com.system.student.repository.StudentRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.Map;
+
 
 @RestController
 @RequestMapping("/api/students/")
 public class StudentController {
-    private Map<Integer, Student> studentsCollection = new HashMap<>();
-    private int numberOfStudent  =1 ;
+
+    @Autowired
+    private StudentRepository studentRepository;
 
     @PostMapping("/create")
     public Student addStudent(@RequestBody Student student) {
-        student.setId(numberOfStudent);
-        studentsCollection.put(student.getId(), student);
-        numberOfStudent++;
-        return student;
+        // Saving the student to the database
+        return studentRepository.save(student);
     }
 
     @GetMapping("/{id}")
-    public Student getStudentInfo(@PathVariable int id){
-        return studentsCollection.containsKey(id) ? studentsCollection.get(id) : null;
+    public Student getStudentInfo(@PathVariable int id) {
+        return studentRepository.findById(id).orElse(null);
     }
 }
