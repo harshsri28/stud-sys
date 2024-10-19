@@ -1,60 +1,71 @@
 package com.system.student.controller;
 
-
 import com.system.student.model.Student;
-import com.system.student.repository.StudentRepository;
+import com.system.student.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
-
 
 @RestController
 @RequestMapping("/api/students/")
 public class StudentController {
 
     @Autowired
-    private StudentRepository studentRepository;
+    private StudentService studentService;
 
     @PostMapping("/create")
-    public Student addStudent(@RequestBody Student student) {
-        return studentRepository.save(student);
+    public ResponseEntity<?> addStudent(@RequestBody Student student) {
+        if (student.getName() == null || student.getName().isEmpty()) {
+            return ResponseEntity.badRequest().body("Name is required");
+        }
+        Student createdStudent = studentService.addStudent(student);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdStudent);
     }
 
     @GetMapping("/{id}")
-    public Student getStudentInfo(@PathVariable int id) {
-        return studentRepository.findById(id).orElse(null);
-    }
+    public ResponseEntity<?> getStudentInfo(@PathVariable int id) {
+        Optional<Student> studentOptional = studentService.getStudentById(id);
 
-    @GetMapping("/all")
-    public List<Student> getAllStudents(){
-        return studentRepository.findAll();
+        if (studentOptional.isPresent()) {
+            return ResponseEntity.ok(studentOptional.get());
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Student not found");
+        }
     }
 
     @PutMapping("/update/{id}")
-    public Student updateStudentInfo(@PathVariable int id, @RequestBody Student student) {
-        Optional<Student> studentInfo = studentRepository.findById(id);
+    public ResponseEntity<?> updateStudent(@PathVariable int id, @RequestBody Student updatedStudent) {
+        if (updatedStudent.getName() == null || updatedStudent.getName().isEmpty()) {
+            return ResponseEntity.badRequest().body("Name is required");
+        }
 
-        if(studentInfo.isPresent()){
-            Student studentDetails = studentInfo.get();
-            studentDetails.setName(student.getName());
-            studentDetails.setStudentId(student.getStudentId());
-            return studentRepository.save(studentDetails);
+        Optional<Student> updatedStudentOptional = studentService.updateStudent(id, updatedStudent);
+
+        if (updatedStudentOptional.isPresent()) {
+            return ResponseEntity.ok(updatedStudentOptional.get());
         } else {
-            return null;
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Student not found");
         }
     }
 
     @DeleteMapping("/delete/{id}")
-    public String deleteStudentInfo(@PathVariable int id) {
-        Optional<Student> studentInfo= studentRepository.findById(id);
+    public ResponseEntity<?> deleteStudent(@PathVariable int id) {
+        boolean isDeleted = studentService.deleteStudentById(id);
 
-        if(studentInfo.isPresent()){
-            studentRepository.delete(studentInfo.get());
-            return "success";
-        }else{
-            return "Data not Found";
+        if (isDeleted) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Student not found");
         }
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<?> getAllStudent(){
+        List<Student> students = studentService.getAllStudents();
+        return ResponseEntity.ok(students);
     }
 }
